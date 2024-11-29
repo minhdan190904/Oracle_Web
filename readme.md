@@ -1,1 +1,1 @@
-địt 
+Happy, lucky, konichiwa baby
