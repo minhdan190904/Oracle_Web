@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Oracle_WEB_BTL.Helpers;
 using Oracle_WEB_BTL.Models;
 using System;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Oracle_WEB_BTL.Controllers
     public class DmhanghoasController : Controller
     {
         private readonly OracleContext _context;
-        private const int itemsPerPage = 1;
+        private const int itemsPerPage = 4;
 
         public DmhanghoasController(OracleContext context)
         {
@@ -34,6 +35,79 @@ namespace Oracle_WEB_BTL.Controllers
 
             return View("Index", paginatedHanghoas);
         }
+
+        // GET: Dmhanghoas/Create
+        public async Task<IActionResult> Create()
+        {
+            await PopulateViewBags();
+            return View();
+        }
+
+        // POST: Dmhanghoas/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(
+            [Bind("Tenhanghoa,Maloai,Mahinhdang,Machatlieu,Manuocsx,Mamau,Macongdung,Mansx,DonGiaNhap,DonGiaBan,Thoigianbaohanh,Ghichu")] Dmhanghoa hanghoa,
+            IFormFile? imageFile)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Xử lý upload ảnh nếu có
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                        var fileExtension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("Anh", "Chỉ chấp nhận các tệp ảnh (.jpg, .jpeg, .png, .gif).");
+                            await PopulateViewBags();
+                            return View(hanghoa);
+                        }
+
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), AppDefaults.DefaultProductImageFolder, imageFile.FileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        hanghoa.Anh = imageFile.FileName;
+                    }
+                    else
+                    {
+                        hanghoa.Anh = "1.png";
+                    }
+
+                    _context.Add(hanghoa);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Thêm sản phẩm thành công!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Lỗi: {ex.Message}");
+                }
+            }
+
+            await PopulateViewBags();
+            return View(hanghoa);
+        }
+
+        // Hàm trợ giúp để nạp dữ liệu vào ViewBag
+        private async Task PopulateViewBags()
+        {
+            ViewBag.Loai = new SelectList(await _context.Loais.ToListAsync() ?? new List<Loai>(), "Maloai", "Tenloai");
+            ViewBag.HinhDang = new SelectList(await _context.Hinhdangs.ToListAsync() ?? new List<Hinhdang>(), "Mahinhdang", "Tenhinhdang");
+            ViewBag.ChatLieu = new SelectList(await _context.Chatlieus.ToListAsync() ?? new List<Chatlieu>(), "Machatlieu", "Tenchatlieu");
+            ViewBag.NuocSanXuat = new SelectList(await _context.Nuocsxes.ToListAsync() ?? new List<Nuocsx>(), "Manuocsx", "Tennuocsx");
+            ViewBag.NhaSanXuat = new SelectList(await _context.Nhasanxuats.ToListAsync() ?? new List<Nhasanxuat>(), "Mansx", "Tennsx");
+            ViewBag.MauSac = new SelectList(await _context.Mausacs.ToListAsync() ?? new List<Mausac>(), "Mamau", "Tenmau");
+            ViewBag.DacDiem = new SelectList(await _context.Dacdiems.ToListAsync() ?? new List<Dacdiem>(), "Madacdiem", "Tendacdiem");
+            ViewBag.CongDung = new SelectList(await _context.Congdungs.ToListAsync() ?? new List<Congdung>(), "Macongdung", "Tencongdung");
+        }
+
 
         // GET: Dmhanghoas/GetProducts
         public async Task<IActionResult> GetProducts(int page = 1, string searchTerm = "")

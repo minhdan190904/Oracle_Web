@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Oracle_WEB_BTL.Models;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Oracle_WEB_BTL.Controllers
 {
+    [Authorize]
     public class HoadonnhapsController : Controller
     {
         private readonly OracleContext _context;

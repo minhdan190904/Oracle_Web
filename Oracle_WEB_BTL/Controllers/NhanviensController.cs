@@ -6,9 +6,11 @@ using Oracle_WEB_BTL.Helpers;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Oracle_WEB_BTL.Controllers
 {
+    [Authorize(Policy = "AdminOnly")]
     public class NhanviensController : Controller
     {
         private readonly OracleContext _context;

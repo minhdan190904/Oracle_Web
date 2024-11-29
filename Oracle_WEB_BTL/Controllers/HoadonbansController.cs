@@ -7,9 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Oracle_WEB_BTL.Controllers
 {
+    [Authorize]
     public class HoadonbansController : Controller
     {
         private readonly OracleContext _context;
