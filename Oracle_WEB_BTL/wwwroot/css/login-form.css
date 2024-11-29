@@ -1,0 +1,79 @@
+﻿.container-fluid {
+    background-image: linear-gradient(to bottom right, #f1d6d0, #d8e2c6);
+    height: 100%;
+}
+
+.main-content {
+    width: 400px;
+    padding-top: 20px;
+    padding-bottom: 150px;
+}
+
+.name-system{
+    text-align: center;
+    padding-top: 40px;
+}
+
+.user-icon {
+    width: 30%;
+    height: auto;
+    display: block;
+    padding: 20px;
+    margin: 0 auto;
+}
+
+.google-account-login {
+    width: 100%;
+    background-color: white;
+    border-width: 0px;
+    padding: 5px;
+    margin: 20px 0px;
+    text-decoration: none;
+    color: black;
+    display: inline-block;
+    text-align: center;
+    border-radius: 3px;
+}
+
+.google-image {
+    height: 18px;
+    width: auto;
+    margin: 0 5px 2px;
+}
+
+.login-form {
+    background-color: white;
+    border-radius: 4px;
+}
+
+.main-form, .footer {
+    width: 100%;
+    padding: 30px;
+}
+
+input[type='text'], input[type = 'password'] {
+    border: none;
+    border-bottom: 1px solid rgb(194, 193, 193);
+    border-radius: 0px;
+}
+
+.login {
+    border: none;
+    display: block;
+    margin: 20px auto;
+    padding: 5px;
+    width: 100%;
+    background-color: whitesmoke;
+    color: black;
+}
+
+.footer {
+    border-top: 1px solid rgb(221, 221, 221);
+    padding: 5% 18%;
+    text-align: center;
+    font-size: 13px;
+}
+
+button {
+    border-radius: 4px;
+}

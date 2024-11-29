@@ -1,0 +1,60 @@
+﻿@model Oracle_WEB_BTL.ViewModels.LoginViewModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/login-form.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="name-system">
+            <h1 class="title">HỆ THỐNG QUẢN LÝ ĐỒ NỘI THẤT</h1>
+        </div>
+        <div class="container main-content">
+            <img class="user-icon" src="~/available/user.png" alt="user icon">
+            <div class="google-account-login">
+                <img src="~/available/login-image-v2.png" class="google-image" alt="">
+                ĐĂNG NHẬP
+            </div>
+            <form asp-action="Login" method="post" class="login-form">
+                <div class="main-form">
+                    <div class="alert alert-info text-center" role="alert">
+                        <p>Tài khoản: <strong>test@gmail.com</strong></p>
+                        <p>Mật khẩu: <strong>123456</strong></p>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control input-field" asp-for="Email" placeholder="Email" />
+                        <label for="Email">Email</label>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control input-field" asp-for="Password" placeholder="Mật khẩu" />
+                        <label for="Password">Mật khẩu</label>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <input asp-for="KeepLoggedIn" type="checkbox" />
+                        <label for="KeepLoggedIn">Lưu thông tin đăng nhập</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">ĐĂNG NHẬP</button>
+                    @if (ViewData["ValidateMessage"] != null)
+
+                    {
+                        <div class="text-danger text-center mt-2">
+                            @ViewData["ValidateMessage"]
+                        </div>
+                    }
+                </div>
+                <div class="footer text-center mt-3">
+                    <a href="@Url.Action("ResetPassword", "Access")">Quên mật khẩu?</a>
+                    <p>Nếu nhân viên quên mật khẩu thì bạn có thể nhấn vào "Quên mật khẩu?" để lấy lại mật khẩu</p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

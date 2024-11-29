@@ -1,0 +1,155 @@
+﻿@using Oracle_WEB_BTL.Helpers
+@model Oracle_WEB_BTL.Models.Nhanvien
+
+@{
+    ViewData["Title"] = "Tạo Nhân Viên Mới";
+    Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
+}
+
+<section class="content">
+    <div class="ms-2 mx-2">
+        <form asp-controller="Nhanviens" asp-action="Create" method="post" class="mt-3" enctype="multipart/form-data">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Thông Tin Cá Nhân</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <img id="avatarPreview" class="profile-user-img img-fluid img-circle" src="~/images/@(Model.Anh ?? AppDefaults.DefaultImageFile)" alt="User profile picture">
+                                <div class="form-group mt-3">
+                                    <label for="imageFile">Chọn Ảnh</label>
+                                    <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" style="display:none;" />
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Tennv" class="col-sm-4 col-form-label">Tên Nhân Viên</label>
+                                <div class="col-sm-8">
+                                    <input asp-for="Tennv" class="form-control" />
+                                    <span asp-validation-for="Tennv" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Dienthoai" class="col-sm-4 col-form-label">Số Điện Thoại</label>
+                                <div class="col-sm-8">
+                                    <input asp-for="Dienthoai" class="form-control" />
+                                    <span asp-validation-for="Dienthoai" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Gioitinh" class="col-sm-4 col-form-label">Giới Tính</label>
+                                <div class="col-sm-8">
+                                    <select asp-for="Gioitinh" class="form-control select2bs4" asp-items="@ViewBag.GenderList"></select>
+                                    <span asp-validation-for="Gioitinh" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Ngaysinh" class="col-sm-4 col-form-label">Ngày Sinh</label>
+                                <div class="col-sm-8">
+                                    <input asp-for="Ngaysinh" class="form-control" type="date" />
+                                    <span asp-validation-for="Ngaysinh" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Diachi" class="col-sm-4 col-form-label">Địa Chỉ</label>
+                                <div class="col-sm-8">
+                                    <input asp-for="Diachi" class="form-control" />
+                                    <span asp-validation-for="Diachi" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Macv" class="col-sm-4 col-form-label">Công Việc</label>
+                                <div class="col-sm-6">
+                                    <select asp-for="Macv" class="form-control select2bs4" asp-items="@ViewBag.JobList"></select>
+                                    <span asp-validation-for="Macv" class="text-danger"></span>
+                                </div>
+                                <div class="col-sm-2">
+                                    <a asp-controller="Congviecs" asp-action="Create" class="btn btn-primary">Thêm</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Tạo Tài Khoản</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group row mb-3">
+                                <label asp-for="Email" class="col-sm-4 col-form-label">Email</label>
+                                <div class="col-sm-8">
+                                    <input asp-for="Email" class="form-control" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Matkhau" class="col-sm-4 col-form-label">Mật Khẩu</label>
+                                <div class="col-sm-8">
+                                    <input asp-for="Matkhau" class="form-control" />
+                                    <span asp-validation-for="Matkhau" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-3">
+                                <label asp-for="Quyenadmin" class="col-sm-4 col-form-label">Quyền Admin</label>
+                                <div class="col-sm-8">
+                                    <select asp-for="Quyenadmin" class="form-control" asp-items="ViewBag.QuyenadminList"></select>
+                                    <span asp-validation-for="Quyenadmin" class="text-danger"></span>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row">
+                <div class="col-12">
+                    <a asp-action="Index" class="btn btn-secondary">Quay Lại</a>
+                    <button type="submit" class="btn btn-primary float-right">Tạo</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const avatarPreview = document.getElementById('avatarPreview');
+                avatarPreview.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    </script>
+}

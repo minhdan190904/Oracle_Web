@@ -1,0 +1,332 @@
+﻿@model Oracle_WEB_BTL.Models.Hoadonnhap
+
+@{
+    ViewData["Title"] = "Tạo mới hóa đơn nhập";
+    Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<!-- Display Validation Summary -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    <!-- Anti-Forgery Token -->
+    @Html.AntiForgeryToken()
+
+    <!-- Chọn nhà cung cấp -->
+    <div class="form-group">
+        <label for="Mancc">Chọn nhà cung cấp:</label>
+        <select asp-for="Mancc" class="form-control select2bs4" asp-items="ViewBag.Suppliers" id="Mancc">
+            <option value="" disabled selected>-- Chọn nhà cung cấp --</option>
+        </select>
+        <span class="text-danger">@Html.ValidationMessageFor(m => m.Mancc)</span>
+    </div>
+
+    <!-- Thông tin nhà cung cấp -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Thông tin nhà cung cấp</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên</th>
+                        <th>Địa chỉ</th>
+                        <th>Số điện thoại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="ManccDisplay">--</td>
+                        <td id="Tenncc">--</td>
+                        <td id="Diachi">--</td>
+                        <td id="Dienthoai">--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Chọn sản phẩm -->
+    <div class="form-group">
+        <label for="Mahang">Chọn sản phẩm:</label>
+        <select id="Mahang" class="form-control select2bs4">
+            <option value="" disabled selected>-- Chọn sản phẩm --</option>
+            @foreach (var product in ViewBag.Products)
+            {
+                <option value="@product.Value">@product.Text</option>
+            }
+        </select>
+        <span class="text-danger" id="ProductError" style="display: none;">Vui lòng chọn sản phẩm.</span>
+    </div>
+
+    <!-- Thông tin sản phẩm cần thêm -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Thông tin sản phẩm cần thêm</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID Sản Phẩm</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá Nhập</th>
+                        <th>Giảm Giá (%)</th>
+                        <th></th> <!-- Cột cho nút Thêm sản phẩm -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="SelectedProductId">--</td>
+                        <td id="SelectedProductName">--</td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductQuantity" min="1" placeholder="Nhập số lượng" />
+                            <span class="text-danger" id="QuantityError" style="display: none;">Vui lòng nhập số lượng.</span>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductUnitPrice" readonly />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductDiscount" min="0" max="100" placeholder="Nhập giảm giá (%) nếu có" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" id="AddProductButton">Thêm sản phẩm</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Danh sách sản phẩm đã chọn -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Danh sách sản phẩm đã chọn</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped" id="ProductDetailsTable">
+                <thead>
+                    <tr>
+                        <th>ID Sản Phẩm</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá Nhập</th>
+                        <th>Giảm Giá (%)</th>
+                        <th>Thành Tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="SelectedProductTableBody">
+                    <!-- Các sản phẩm đã thêm sẽ hiển thị tại đây -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tổng tiền -->
+    <div class="card-footer">
+        <h4>Tổng Tiền: <span id="TotalAmount">0</span> VNĐ</h4>
+    </div>
+
+    <!-- Nút lưu hóa đơn -->
+    <button type="submit" class="btn btn-success mt-3">Lưu hóa đơn</button>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize Select2
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            });
+
+            var nextIndex = 0;
+
+            // Load supplier info when supplier selection changes
+            $('#Mancc').change(function () {
+                var supplierId = $(this).val();
+                console.log("Selected Supplier ID:", supplierId);
+                if (supplierId) {
+                    $.ajax({
+                        url: '@Url.Action("GetSupplierInfo", "Hoadonnhaps")',
+                        data: { supplierId: supplierId },
+                        success: function (data) {
+                            console.log("Supplier Data Received:", data);
+                            if (data) {
+                                $('#ManccDisplay').text(data.mancc);
+                                $('#Tenncc').text(data.tenncc);
+                                $('#Diachi').text(data.diachi);
+                                $('#Dienthoai').text(data.dienthoai);
+                            } else {
+                                $('#ManccDisplay, #Tenncc, #Diachi, #Dienthoai').text('--');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching supplier info:", error);
+                            $('#ManccDisplay, #Tenncc, #Diachi, #Dienthoai').text('--');
+                        }
+                    });
+                } else {
+                    $('#ManccDisplay, #Tenncc, #Diachi, #Dienthoai').text('--');
+                }
+            });
+
+            // Load product information when a product is selected
+            $('#Mahang').change(function () {
+                var productId = $(this).val();
+                console.log("Selected Product ID:", productId);
+                if (productId) {
+                    $.ajax({
+                        url: '@Url.Action("GetProductInfo", "Hoadonnhaps")',
+                        data: { productId: productId },
+                        success: function (data) {
+                            console.log("Product Data Received:", data);
+                            if (data) {
+                                $('#SelectedProductId').text(data.mahang);
+                                $('#SelectedProductName').text(data.tenhanghoa);
+                                $('#ProductUnitPrice').val(data.dongianhap);
+                                $('#ProductDiscount').val('0');
+                                $('#ProductQuantity').val('');
+                            } else {
+                                $('#SelectedProductId, #SelectedProductName').text('--');
+                                $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching product info:", error);
+                            $('#SelectedProductId, #SelectedProductName').text('--');
+                            $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                        }
+                    });
+                } else {
+                    $('#SelectedProductId, #SelectedProductName').text('--');
+                    $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                }
+            });
+
+            // Handle adding products to the invoice
+            $('#AddProductButton').click(function () {
+                var productId = $('#SelectedProductId').text();
+                var productName = $('#SelectedProductName').text();
+                var quantity = parseInt($('#ProductQuantity').val());
+                var unitPrice = parseFloat($('#ProductUnitPrice').val());
+                var discount = parseInt($('#ProductDiscount').val()) || 0;
+
+                console.log("Adding Product:", {
+                    productId: productId,
+                    productName: productName,
+                    quantity: quantity,
+                    unitPrice: unitPrice,
+                    discount: discount
+                });
+
+                // Client-side validation
+                var hasError = false;
+
+                if (!productId || productId === '--') {
+                    $('#ProductError').show();
+                    hasError = true;
+                } else {
+                    $('#ProductError').hide();
+                }
+
+                if (isNaN(quantity) || quantity <= 0) {
+                    $('#QuantityError').show();
+                    hasError = true;
+                } else {
+                    $('#QuantityError').hide();
+                }
+
+                if (discount < 0 || discount > 100) {
+                    alert('Giảm giá phải từ 0 đến 100.');
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    return;
+                }
+
+                // Calculate total amount
+                var totalAmount = quantity * unitPrice * (100 - discount) / 100;
+                console.log("Calculated Total Amount:", totalAmount);
+
+                // Check if product is already added
+                var existingRow = $('#SelectedProductTableBody').find("input[name$='Mahang'][value='" + productId + "']");
+                if (existingRow.length > 0) {
+                    alert('Sản phẩm này đã được thêm.');
+                    return;
+                }
+
+                // Append the product to the table with the correct index
+                $('#SelectedProductTableBody').append(
+                    `<tr data-index="${nextIndex}">
+                                <td>${productId}<input type="hidden" name="Chitiethoadonnhaps[${nextIndex}].Mahang" value="${productId}" /></td>
+                                <td>${productName}</td>
+                                <td><input type="number" class="form-control quantity-input" name="Chitiethoadonnhaps[${nextIndex}].Soluong" value="${quantity}" min="1" /></td>
+                                <td>${unitPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td><input type="number" class="form-control discount-input" name="Chitiethoadonnhaps[${nextIndex}].Giamgia" value="${discount}" min="0" max="100" /></td>
+                                <td class="total-amount-cell">${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td><button type="button" class="btn btn-danger RemoveProductButton">Xóa</button></td>
+                            </tr>`
+                );
+
+                nextIndex++; // Increment the index for the next product
+
+                updateTotalAmount();
+
+                // Clear product selection
+                $('#Mahang').val('').trigger('change');
+                $('#SelectedProductId').text('--');
+                $('#SelectedProductName').text('--');
+                $('#ProductUnitPrice').val('');
+                $('#ProductDiscount').val('');
+                $('#ProductQuantity').val('');
+            });
+
+            // Handle removing products from the invoice
+            $('#SelectedProductTableBody').on('click', '.RemoveProductButton', function () {
+                $(this).closest('tr').remove();
+                updateTotalAmount();
+            });
+
+            // Update total amount when quantity or discount changes
+            $('#SelectedProductTableBody').on('input', '.quantity-input, .discount-input', function () {
+                var row = $(this).closest('tr');
+                var quantity = parseInt(row.find('.quantity-input').val()) || 0;
+                var unitPriceText = row.find('td').eq(3).text().replace(/,/g, '');
+                var unitPrice = parseFloat(unitPriceText) || 0;
+                var discount = parseInt(row.find('.discount-input').val()) || 0;
+
+                var totalAmount = quantity * unitPrice * (100 - discount) / 100;
+                row.find('.total-amount-cell').text(totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+                updateTotalAmount();
+            });
+
+            function updateTotalAmount() {
+                var total = 0;
+                $('#SelectedProductTableBody tr').each(function () {
+                    var amountText = $(this).find('.total-amount-cell').text().replace(/,/g, '');
+                    var amount = parseFloat(amountText) || 0;
+                    total += amount;
+                });
+                $('#TotalAmount').text(total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            }
+        });
+    </script>
+}

@@ -1,0 +1,70 @@
+﻿@model IEnumerable<Oracle_WEB_BTL.Models.Hoadonban>
+
+@{
+    ViewData["Title"] = "Danh Sách Hóa Đơn Bán";
+    Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
+}
+
+<div class="ms-2 mx-2">
+    <a asp-controller="Hoadonbans" asp-action="Create" class="btn btn-primary">
+        <i class="fa fa-plus"></i> Tạo Hóa Đơn Bán Mới
+    </a>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning mt-3">
+            Không có hóa đơn bán nào trong danh sách.
+        </div>
+    }
+    else
+    {
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="card-title">Danh Sách Hóa Đơn Bán</h3>
+            </div>
+            <div class="card-body">
+                <table id="example1" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.First().Sohdb)</th>
+                            <th>@Html.DisplayNameFor(model => model.First().Ngayban)</th>
+                            <th>Khách Hàng</th>
+                            <th>Nhân Viên</th>
+                            <th>Tổng Tiền</th>
+                            <th>Sửa</th>
+                            <th>Xóa</th>
+                            <th>Chi Tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var hoadonban in Model)
+                        {
+                            <tr>
+                                <td>@hoadonban.Sohdb</td>
+                                <td>@hoadonban.Ngayban?.ToString("dd/MM/yyyy")</td>
+                                <td>@hoadonban.MakhachNavigation?.Tenkhach</td>
+                                <td>@hoadonban.ManvNavigation?.Tennv</td>
+                                <td>@string.Format("{0:N0}", hoadonban.TongTien)</td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@hoadonban.Sohdb" class="btn btn-warning btn-sm">
+                                        <i class="fa fa-pencil-alt"></i> Sửa
+                                    </a>
+                                </td>
+                                <td>
+                                    <a asp-action="Delete" asp-route-id="@hoadonban.Sohdb" class="btn btn-danger btn-sm">
+                                        <i class="fa fa-trash"></i> Xóa
+                                    </a>
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@hoadonban.Sohdb" class="btn btn-info btn-sm">
+                                        <i class="fa fa-eye"></i> Chi Tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

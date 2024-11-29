@@ -1,0 +1,100 @@
+﻿@model Oracle_WEB_BTL.Models.Dmhanghoa
+
+@{
+    ViewData["Title"] = "Thông Tin Sản Phẩm";
+    Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/product.css">
+}
+
+<div class="container">
+    <div class="title">THÔNG TIN SẢN PHẨM</div>
+    <div class="detail">
+        <div class="image d-flex flex-column justify-content-between">
+            <img src="~/images/ProductImages/@(string.IsNullOrEmpty(Model.Anh) ? "default.png" : Model.Anh)" alt="Ảnh sản phẩm">
+
+            <div class="buttons d-flex justify-content-center flex-wrap">
+                <a class="product-btn" asp-controller="Dmhanghoas" asp-action="Index">Quay lại</a>
+                <a class="product-btn" asp-controller="Dmhanghoas" asp-action="Edit" asp-route-id="@Model.Mahang">Chỉnh sửa</a>
+                <form asp-controller="Dmhanghoas" asp-action="Delete" method="post" asp-route-id="@Model.Mahang">
+                    <button type="submit" class="product-btn" id="delete" onclick="return confirmDelete()">Xóa</button>
+                </form>
+            </div>
+        </div>
+        <div class="content">
+            <h1 class="name">@Model.Tenhanghoa</h1>
+            <div class="ID">
+                <label class="label">Mã hàng</label>:
+                <span class="value">@Model.Mahang</span>
+            </div>
+            <div class="category">
+                <label class="label">Loại</label>:
+                <span class="value">@Model.MaloaiNavigation?.Tenloai</span>
+            </div>
+            <div class="size">
+                <label class="label">Kích thước</label>:
+                <span class="value">@Model.MakichthuocNavigation?.Tenkichthuoc</span>
+            </div>
+            <div class="material">
+                <label class="label">Chất liệu</label>:
+                <span class="value">@Model.MachatlieuNavigation?.Tenchatlieu</span>
+            </div>
+            <div class="manufacturer">
+                <label class="label">Nhà sản xuất</label>:
+                <span class="value">@Model.MansxNavigation?.Tennsx</span>
+            </div>
+            <div class="color">
+                <label class="label">Màu sắc</label>:
+                <span class="value">@Model.MamauNavigation?.Tenmau</span>
+            </div>
+            <div class="country">
+                <label class="label">Nước sản xuất</label>:
+                <span class="value">@Model.ManuocsxNavigation?.Tennuocsx</span>
+            </div>
+            <div class="purchase-price">
+                <label class="label">Đơn giá nhập</label>:
+                <span class="value">@Model.Dongianhap?.ToString("N0")</span>
+                <span>vnđ</span>
+            </div>
+            <div class="selling-price">
+                <label class="label">Đơn giá bán</label>:
+                <span class="value">@Model.Dongiaban?.ToString("N0")</span>
+                <span>vnđ</span>
+            </div>
+            <div class="warranty-period">
+                <label class="label">Thời gian bảo hành</label>:
+                <span class="value">@Model.Thoigianbaohanh</span>
+                <span>Tháng</span>
+            </div>
+            <div class="quantity">
+                <label class="label">Tổng số lượng nhập</label>:
+                <span class="value">@ViewBag.TongSoLuongNhap</span>
+                <span>Chiếc</span>
+            </div>
+            <div class="quantity">
+                <label class="label">Tổng số lượng bán</label>:
+                <span class="value">@ViewBag.TongSoLuongBan</span>
+                <span>Chiếc</span>
+            </div>
+            <div class="quantity">
+                <label class="label">Số lượng tồn kho</label>:
+                <span class="value">@ViewBag.SoLuongTonKho</span>
+                <span>Chiếc</span>
+            </div>
+            <div class="description">
+                <label class="label">Ghi chú</label>:
+                <span class="value">@Model.Ghichu</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            return confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?");
+        }
+    </script>
+}

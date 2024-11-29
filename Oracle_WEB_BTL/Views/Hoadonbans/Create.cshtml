@@ -1,0 +1,314 @@
+﻿@model Oracle_WEB_BTL.Models.Hoadonban
+
+@{
+    ViewData["Title"] = "Tạo mới hóa đơn bán";
+    Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post">
+    <!-- Hiển thị Validation Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- Chọn khách hàng -->
+    <div class="form-group">
+        <label for="Makhach">Chọn khách hàng:</label>
+        <select asp-for="Makhach" class="form-control select2bs4" asp-items="ViewBag.Customers" id="Makhach">
+            <option value="" disabled selected>-- Chọn khách hàng --</option>
+        </select>
+        <span class="text-danger">@Html.ValidationMessageFor(m => m.Makhach)</span>
+    </div>
+
+    <!-- Thông tin khách hàng -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Thông tin khách hàng</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Địa chỉ</th>
+                        <th>Số điện thoại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="CustomerIdDisplay">--</td>
+                        <td id="CustomerName">--</td>
+                        <td id="CustomerAddress">--</td>
+                        <td id="CustomerPhone">--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Chọn sản phẩm -->
+    <div class="form-group">
+        <label for="ProductId">Chọn sản phẩm:</label>
+        <select id="ProductId" class="form-control select2bs4">
+            <option value="" disabled selected>-- Chọn sản phẩm --</option>
+            @foreach (var product in ViewBag.Products)
+            {
+                <option value="@product.Value">@product.Text</option>
+            }
+        </select>
+        <span class="text-danger" id="ProductError" style="display: none;">Vui lòng chọn sản phẩm.</span>
+    </div>
+
+    <!-- Thông tin sản phẩm cần thêm -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Thông tin sản phẩm cần thêm</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID Sản Phẩm</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Số lượng có sẵn</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá</th>
+                        <th>Giảm Giá (%)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="SelectedProductId">--</td>
+                        <td id="SelectedProductName">--</td>
+                        <td id="AvailableQuantityDisplay">--</td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductQuantity" min="1" placeholder="Nhập số lượng" />
+                            <span class="text-danger" id="QuantityError" style="display: none;">Vui lòng nhập số lượng hợp lệ.</span>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductUnitPrice" min="0" placeholder="Nhập đơn giá" />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductDiscount" min="0" max="100" placeholder="Nhập giảm giá (%) nếu có" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" id="AddProductButton">Thêm sản phẩm</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Danh sách sản phẩm đã thêm -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Danh sách sản phẩm đã thêm</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped" id="ProductDetailsTable">
+                <thead>
+                    <tr>
+                        <th>ID Sản Phẩm</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá</th>
+                        <th>Giảm Giá (%)</th>
+                        <th>Tổng Tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="SelectedProductTableBody">
+                    <!-- Sản phẩm sẽ được thêm ở đây -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tổng tiền hóa đơn -->
+    <div class="mt-3">
+        <h4>Tổng tiền hóa đơn: <span id="InvoiceTotalAmount">0</span></h4>
+    </div>
+
+    <button type="submit" class="btn btn-success mt-3">Lưu hóa đơn</button>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Khởi tạo Select2
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Biến để theo dõi chỉ mục tiếp theo
+            var nextIndex = 0;
+
+            // Biến để lưu trữ số lượng có sẵn của sản phẩm hiện tại
+            var currentAvailableQuantity = 0;
+
+            // Load thông tin khách hàng khi chọn
+            $('#Makhach').change(function () {
+                var customerId = $(this).val();
+                if (customerId) {
+                    $.ajax({
+                        url: '@Url.Action("GetCustomerInfo", "Hoadonbans")',
+                        data: { customerId: customerId },
+                        success: function (data) {
+                            $('#CustomerIdDisplay').text(data.customerId);
+                            $('#CustomerName').text(data.customerName);
+                            $('#CustomerAddress').text(data.address);
+                            $('#CustomerPhone').text(data.phoneNumber);
+                        },
+                        error: function () {
+                            $('#CustomerIdDisplay, #CustomerName, #CustomerAddress, #CustomerPhone').text('--');
+                        }
+                    });
+                } else {
+                    $('#CustomerIdDisplay, #CustomerName, #CustomerAddress, #CustomerPhone').text('--');
+                }
+            });
+
+            // Load thông tin sản phẩm khi chọn
+            $('#ProductId').change(function () {
+                var productId = $(this).val();
+                if (productId) {
+                    $.ajax({
+                        url: '@Url.Action("GetProductInfo", "Hoadonbans")',
+                        data: { productId: productId },
+                        success: function (data) {
+                            if (data) {
+                                $('#SelectedProductId').text(data.productId);
+                                $('#SelectedProductName').text(data.productName);
+                                $('#AvailableQuantityDisplay').text(data.availableQuantity);
+                                currentAvailableQuantity = data.availableQuantity;
+                                $('#ProductUnitPrice').val(data.sellingPrice);
+                                $('#ProductDiscount').val('0');
+                                $('#ProductQuantity').val('');
+                            }
+                        },
+                        error: function () {
+                            $('#SelectedProductId, #SelectedProductName, #AvailableQuantityDisplay').text('--');
+                            $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                            currentAvailableQuantity = 0;
+                        }
+                    });
+                } else {
+                    $('#SelectedProductId, #SelectedProductName, #AvailableQuantityDisplay').text('--');
+                    $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                    currentAvailableQuantity = 0;
+                }
+            });
+
+            // Xử lý thêm sản phẩm vào hóa đơn
+            $('#AddProductButton').click(function () {
+                var productId = $('#SelectedProductId').text();
+                var productName = $('#SelectedProductName').text();
+                var availableQuantity = currentAvailableQuantity;
+                var quantity = parseInt($('#ProductQuantity').val());
+                var unitPrice = parseFloat($('#ProductUnitPrice').val());
+                var discount = parseInt($('#ProductDiscount').val()) || 0;
+
+                if (!productId || productId === '--') {
+                    $('#ProductError').show();
+                    return;
+                } else {
+                    $('#ProductError').hide();
+                }
+
+                if (isNaN(quantity) || quantity <= 0 || quantity > availableQuantity) {
+                    $('#QuantityError').text('Vui lòng nhập số lượng hợp lệ (tối đa ' + availableQuantity + ').').show();
+                    return;
+                } else {
+                    $('#QuantityError').hide();
+                }
+
+                // Tính tổng tiền
+                var totalAmount = quantity * unitPrice * (100 - discount) / 100;
+
+                // Kiểm tra sản phẩm đã được thêm chưa
+                var existingRow = $('#SelectedProductTableBody').find(`input[name$='Mahang'][value='${productId}']`);
+                if (existingRow.length > 0) {
+                    alert('Sản phẩm này đã được thêm.');
+                    return;
+                }
+
+                // Thêm sản phẩm vào bảng
+                $('#SelectedProductTableBody').append(`
+                            <tr data-index="${nextIndex}">
+                                <td>${productId}<input type="hidden" name="Chitiethoadonbans[${nextIndex}].Mahang" value="${productId}" /></td>
+                                <td>${productName}</td>
+                                <td><input type="number" class="form-control quantity-input" name="Chitiethoadonbans[${nextIndex}].Soluong" value="${quantity}" min="1" max="${availableQuantity}" /></td>
+                                <td><input type="number" class="form-control unitprice-input" name="Chitiethoadonbans[${nextIndex}].Dongia" value="${unitPrice}" min="0" /></td>
+                                <td><input type="number" class="form-control discount-input" name="Chitiethoadonbans[${nextIndex}].Giamgia" value="${discount}" min="0" max="100" /></td>
+                                <td class="total-amount-cell">${totalAmount.toFixed(2)}</td>
+                                <td><button type="button" class="btn btn-danger RemoveProductButton">Xóa</button></td>
+                            </tr>
+                        `);
+
+                nextIndex++; // Tăng chỉ mục
+
+                updateInvoiceTotalAmount();
+
+                // Xóa lựa chọn sản phẩm
+                $('#ProductId').val('').trigger('change');
+                $('#SelectedProductId').text('--');
+                $('#SelectedProductName').text('--');
+                $('#AvailableQuantityDisplay').text('--');
+                currentAvailableQuantity = 0;
+                $('#ProductUnitPrice').val('');
+                $('#ProductDiscount').val('');
+                $('#ProductQuantity').val('');
+            });
+
+            // Xử lý xóa sản phẩm khỏi hóa đơn
+            $('#SelectedProductTableBody').on('click', '.RemoveProductButton', function () {
+                $(this).closest('tr').remove();
+                updateInvoiceTotalAmount();
+            });
+
+            // Cập nhật tổng tiền khi thay đổi số lượng, đơn giá hoặc giảm giá
+            $('#SelectedProductTableBody').on('input', '.quantity-input, .unitprice-input, .discount-input', function () {
+                var row = $(this).closest('tr');
+                var quantity = parseInt(row.find('.quantity-input').val()) || 0;
+                var unitPrice = parseFloat(row.find('.unitprice-input').val()) || 0;
+                var discount = parseInt(row.find('.discount-input').val()) || 0;
+
+                var maxQuantity = parseInt(row.find('.quantity-input').attr('max'));
+
+                // Kiểm tra số lượng không vượt quá số lượng có sẵn
+                if (quantity > maxQuantity) {
+                    alert('Số lượng vượt quá số lượng có sẵn!');
+                    row.find('.quantity-input').val(maxQuantity);
+                    quantity = maxQuantity;
+                }
+
+                var totalAmount = quantity * unitPrice * (100 - discount) / 100;
+                row.find('.total-amount-cell').text(totalAmount.toFixed(2));
+
+                updateInvoiceTotalAmount();
+            });
+
+            function updateInvoiceTotalAmount() {
+                var total = 0;
+                $('#SelectedProductTableBody tr').each(function () {
+                    var amount = parseFloat($(this).find('.total-amount-cell').text()) || 0;
+                    total += amount;
+                });
+                $('#InvoiceTotalAmount').text(total.toFixed(2));
+            }
+        });
+    </script>
+}
