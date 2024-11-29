@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Thêm Sản Phẩm";
-
     Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
 }
 
@@ -13,12 +12,12 @@
 <div class="container">
     <div class="title">THÊM SẢN PHẨM</div>
     <form class="detail" asp-controller="Dmhanghoas" asp-action="Create" method="post" enctype="multipart/form-data">
-        <input type="hidden" asp-for="Anh" value="default_product.png" />
+        <input type="hidden" asp-for="Anh" value="1.png" />
         <div class="image d-flex flex-column justify-content-between">
             <div class="d-flex flex-column align-content-center">
                 <img id="productPreview" src="~/images/ProductImages/1.png" alt="" />
                 <div class="form-group d-flex justify-content-center">
-                    <label for="imageFile">Chọn Ảnh</label>
+                    <label for="imageFile" class="btn btn-primary">Chọn Ảnh</label>
                     <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" style="display:none;" />
                 </div>
             </div>
@@ -30,96 +29,126 @@
         </div>
 
         <div class="content">
+            <!-- Tên Hàng Hóa -->
             <div class="form-group row mb-3">
-                <label asp-for="Tenhanghoa" class="col-sm-4 col-form-label">Tên Sản Phẩm</label>
+                <label asp-for="Tenhanghoa" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
                     <input asp-for="Tenhanghoa" class="form-control" />
                     <span asp-validation-for="Tenhanghoa" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Loại -->
             <div class="form-group row mb-3">
-                <label asp-for="Maloai" class="col-sm-4 col-form-label">Loại</label>
+                <label asp-for="Maloai" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <select asp-for="Maloai" class="form-control select2bs4" asp-items="ViewBag.Loai"></select>
+                    <select asp-for="Maloai" class="form-control select2bs4" asp-items="@(ViewBag.Loai)"></select>
                     <span asp-validation-for="Maloai" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Hình Dạng -->
             <div class="form-group row mb-3">
-                <label asp-for="Mahinhdang" class="col-sm-4 col-form-label">Hình Dáng</label>
+                <label asp-for="Mahinhdang" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <select asp-for="Mahinhdang" class="form-control select2bs4" asp-items="ViewBag.HinhDang"></select>
+                    <select asp-for="Mahinhdang" class="form-control select2bs4" asp-items="@(ViewBag.HinhDang)"></select>
                     <span asp-validation-for="Mahinhdang" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Chất Liệu -->
             <div class="form-group row mb-3">
-                <label asp-for="Machatlieu" class="col-sm-4 col-form-label">Chất Liệu</label>
+                <label asp-for="Machatlieu" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <select asp-for="Machatlieu" class="form-control select2bs4" asp-items="ViewBag.ChatLieu"></select>
+                    <select asp-for="Machatlieu" class="form-control select2bs4" asp-items="@(ViewBag.ChatLieu)"></select>
                     <span asp-validation-for="Machatlieu" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Nước Sản Xuất -->
             <div class="form-group row mb-3">
-                <label asp-for="Manuocsx" class="col-sm-4 col-form-label">Nước Sản Xuất</label>
+                <label asp-for="Manuocsx" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <select asp-for="Manuocsx" class="form-control select2bs4" asp-items="ViewBag.NuocSanXuat"></select>
+                    <select asp-for="Manuocsx" class="form-control select2bs4" asp-items="@(ViewBag.NuocSanXuat)"></select>
                     <span asp-validation-for="Manuocsx" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Nhà Sản Xuất -->
             <div class="form-group row mb-3">
-                <label asp-for="Mamau" class="col-sm-4 col-form-label">Màu Sắc</label>
+                <label asp-for="Mansx" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <select asp-for="Mamau" class="form-control select2bs4" asp-items="ViewBag.MauSac"></select>
-                    <span asp-validation-for="Mamau" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="form-group row mb-3">
-                <label asp-for="Macongdung" class="col-sm-4 col-form-label">Công Dụng</label>
-                <div class="col-sm-8">
-                    <select asp-for="Macongdung" class="form-control select2bs4" asp-items="ViewBag.CongDung"></select>
-                    <span asp-validation-for="Macongdung" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="form-group row mb-3">
-                <label asp-for="Mansx" class="col-sm-4 col-form-label">Nhà Sản Xuất</label>
-                <div class="col-sm-8">
-                    <select asp-for="Mansx" class="form-control select2bs4" asp-items="ViewBag.NhaSanXuat"></select>
+                    <select asp-for="Mansx" class="form-control select2bs4" asp-items="@(ViewBag.NhaSanXuat)"></select>
                     <span asp-validation-for="Mansx" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Màu Sắc -->
             <div class="form-group row mb-3">
-                <label asp-for="Dongianhap" class="col-sm-4 col-form-label">Đơn Giá Nhập</label>
+                <label asp-for="Mamau" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <input asp-for="Dongianhap" class="form-control" />
+                    <select asp-for="Mamau" class="form-control select2bs4" asp-items="@(ViewBag.MauSac)"></select>
+                    <span asp-validation-for="Mamau" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Công Dụng -->
+            <div class="form-group row mb-3">
+                <label asp-for="Macongdung" class="col-sm-4 col-form-label"></label>
+                <div class="col-sm-8">
+                    <select asp-for="Macongdung" class="form-control select2bs4" asp-items="@(ViewBag.CongDung)"></select>
+                    <span asp-validation-for="Macongdung" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Kích Thước -->
+            <div class="form-group row mb-3">
+                <label asp-for="Makichthuoc" class="col-sm-4 col-form-label"></label>
+                <div class="col-sm-8">
+                    <select asp-for="Makichthuoc" class="form-control select2bs4" asp-items="@(ViewBag.KichThuoc)"></select>
+                    <span asp-validation-for="Makichthuoc" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Đặc Điểm -->
+            <div class="form-group row mb-3">
+                <label asp-for="Madacdiem" class="col-sm-4 col-form-label"></label>
+                <div class="col-sm-8">
+                    <select asp-for="Madacdiem" class="form-control select2bs4" asp-items="@(ViewBag.DacDiem)"></select>
+                    <span asp-validation-for="Madacdiem" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Đơn Giá Nhập -->
+            <div class="form-group row mb-3">
+                <label asp-for="Dongianhap" class="col-sm-4 col-form-label"></label>
+                <div class="col-sm-8">
+                    <input asp-for="Dongianhap" class="form-control decimal-input" />
                     <span asp-validation-for="Dongianhap" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Đơn Giá Bán -->
             <div class="form-group row mb-3">
-                <label asp-for="Dongiaban" class="col-sm-4 col-form-label">Đơn Giá Bán</label>
+                <label asp-for="Dongiaban" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <input asp-for="Dongiaban" class="form-control" />
+                    <input asp-for="Dongiaban" class="form-control decimal-input" />
                     <span asp-validation-for="Dongiaban" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Thời Gian Bảo Hành -->
             <div class="form-group row mb-3">
-                <label asp-for="Thoigianbaohanh" class="col-sm-4 col-form-label">Thời Gian Bảo Hành</label>
+                <label asp-for="Thoigianbaohanh" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
-                    <input asp-for="Thoigianbaohanh" class="form-control" />
+                    <input asp-for="Thoigianbaohanh" class="form-control decimal-input" />
                     <span asp-validation-for="Thoigianbaohanh" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- Ghi Chú -->
             <div class="form-group row mb-3 description">
-                <label asp-for="Ghichu" class="col-sm-4 col-form-label">Ghi Chú</label>
+                <label asp-for="Ghichu" class="col-sm-4 col-form-label"></label>
                 <div class="col-sm-8">
                     <textarea asp-for="Ghichu" class="form-control"></textarea>
                     <span asp-validation-for="Ghichu" class="text-danger"></span>
@@ -130,7 +159,7 @@
 </div>
 
 @section Scripts {
-    @Html.Partial("_ValidationScriptsPartial")
+    @await Html.PartialAsync("_ValidationScriptsPartial")
     <script>
         function previewImage(event) {
             const file = event.target.files[0];

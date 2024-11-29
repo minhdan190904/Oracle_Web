@@ -47,14 +47,14 @@ namespace Oracle_WEB_BTL.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Tenhanghoa,Maloai,Mahinhdang,Machatlieu,Manuocsx,Mamau,Macongdung,Mansx,DonGiaNhap,DonGiaBan,Thoigianbaohanh,Ghichu")] Dmhanghoa hanghoa,
+            [Bind("Tenhanghoa,Maloai,Mahinhdang,Machatlieu,Manuocsx,Mamau,Macongdung,Mansx,Makichthuoc,Madacdiem,Dongianhap,Dongiaban,Thoigianbaohanh,Ghichu,Anh")] Dmhanghoa hanghoa,
             IFormFile? imageFile)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Xử lý upload ảnh nếu có
+                    // Handle image upload if provided
                     if (imageFile != null && imageFile.Length > 0)
                     {
                         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
@@ -67,7 +67,9 @@ namespace Oracle_WEB_BTL.Controllers
                             return View(hanghoa);
                         }
 
-                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), AppDefaults.DefaultProductImageFolder, imageFile.FileName);
+                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/ProductImages");
+                        Directory.CreateDirectory(uploadsFolder); // Ensure the directory exists
+                        var filePath = Path.Combine(uploadsFolder, imageFile.FileName);
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
@@ -95,19 +97,18 @@ namespace Oracle_WEB_BTL.Controllers
             return View(hanghoa);
         }
 
-        // Hàm trợ giúp để nạp dữ liệu vào ViewBag
         private async Task PopulateViewBags()
         {
-            ViewBag.Loai = new SelectList(await _context.Loais.ToListAsync() ?? new List<Loai>(), "Maloai", "Tenloai");
-            ViewBag.HinhDang = new SelectList(await _context.Hinhdangs.ToListAsync() ?? new List<Hinhdang>(), "Mahinhdang", "Tenhinhdang");
-            ViewBag.ChatLieu = new SelectList(await _context.Chatlieus.ToListAsync() ?? new List<Chatlieu>(), "Machatlieu", "Tenchatlieu");
-            ViewBag.NuocSanXuat = new SelectList(await _context.Nuocsxes.ToListAsync() ?? new List<Nuocsx>(), "Manuocsx", "Tennuocsx");
-            ViewBag.NhaSanXuat = new SelectList(await _context.Nhasanxuats.ToListAsync() ?? new List<Nhasanxuat>(), "Mansx", "Tennsx");
-            ViewBag.MauSac = new SelectList(await _context.Mausacs.ToListAsync() ?? new List<Mausac>(), "Mamau", "Tenmau");
-            ViewBag.DacDiem = new SelectList(await _context.Dacdiems.ToListAsync() ?? new List<Dacdiem>(), "Madacdiem", "Tendacdiem");
-            ViewBag.CongDung = new SelectList(await _context.Congdungs.ToListAsync() ?? new List<Congdung>(), "Macongdung", "Tencongdung");
+            ViewBag.Loai = new SelectList(await _context.Loais.ToListAsync(), "Maloai", "Tenloai");
+            ViewBag.HinhDang = new SelectList(await _context.Hinhdangs.ToListAsync(), "Mahinhdang", "Tenhinhdang");
+            ViewBag.ChatLieu = new SelectList(await _context.Chatlieus.ToListAsync(), "Machatlieu", "Tenchatlieu");
+            ViewBag.NuocSanXuat = new SelectList(await _context.Nuocsxes.ToListAsync(), "Manuocsx", "Tennuocsx");
+            ViewBag.NhaSanXuat = new SelectList(await _context.Nhasanxuats.ToListAsync(), "Mansx", "Tennsx");
+            ViewBag.KichThuoc = new SelectList(await _context.Kichthuocs.ToListAsync(), "Makichthuoc", "Tenkichthuoc");
+            ViewBag.MauSac = new SelectList(await _context.Mausacs.ToListAsync(), "Mamau", "Tenmau");
+            ViewBag.DacDiem = new SelectList(await _context.Dacdiems.ToListAsync(), "Madacdiem", "Tendacdiem");
+            ViewBag.CongDung = new SelectList(await _context.Congdungs.ToListAsync(), "Macongdung", "Tencongdung");
         }
-
 
         // GET: Dmhanghoas/GetProducts
         public async Task<IActionResult> GetProducts(int page = 1, string searchTerm = "")
