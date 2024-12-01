@@ -14,7 +14,7 @@ public class SidebarMenuViewComponent : ViewComponent
             new MenuItem() { Id = 2, Name = "Hóa đơn nhập hàng", Link = "/Hoadonnhaps/Index", Icon = "fas fa-file-invoice", IsAdmin = false },
             new MenuItem() { Id = 3, Name = "Hóa đơn bán hàng", Link = "/Hoadonbans/Index", Icon = "fas fa-file-invoice-dollar", IsAdmin = false },
             new MenuItem() { Id = 4, Name = "Nhân viên", Link = "/NhanViens/Index", Icon = "fas fa-user", IsAdmin = true },
-            new MenuItem() { Id = 5, Name = "Vị trí công việc", Link = "/Congviecs/Index", Icon = "fas fa-briefcase", IsAdmin = true },
+            //new MenuItem() { Id = 5, Name = "Vị trí công việc", Link = "/Congviecs/Index", Icon = "fas fa-briefcase", IsAdmin = true },
             new MenuItem()
             {
                 Id = 6,
