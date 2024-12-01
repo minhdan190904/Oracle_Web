@@ -1,86 +1,160 @@
-﻿@model Oracle_WEB_BTL.Models.Nhanvien
+﻿@model Oracle_WEB_BTL.Models.Hoadonnhap
+
 @{
-    ViewData["Title"] = "Chi Tiết Nhân Viên";
+    ViewData["Title"] = "Chi tiết hóa đơn nhập";
     Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
 }
 
-<div class="card card-info">
-    <div class="card-header">
-        <h3 class="card-title">Thông Tin Nhân Viên</h3>
-    </div>
-    <div class="card-body">
-        <div class="text-center">
-            @if (!string.IsNullOrEmpty(Model.Anh))
-            {
-                <img class="profile-user-img img-fluid img-circle" src="~/images/@Model.Anh" alt="Ảnh Nhân Viên" style="width: 150px; height: 150px; object-fit: cover;" />
-            }
-            else
-            {
-                <img class="profile-user-img img-fluid img-circle" src="~/images/@Oracle_WEB_BTL.Helpers.AppDefaults.DefaultImageFile" alt="Ảnh Mặc Định" style="width: 150px; height: 150px; object-fit: cover;" />
-            }
+@section Styles {
+    <link rel="stylesheet" href="~/css/Invoice.css" />
+}
+
+<section>
+    <div id="printableInvoice">
+        <div class="invoice">
+            <div class="invoice_info">
+                <div class="i_row">
+                    <div class="i_logo">
+                        <h1>DAVSH</h1>
+                    </div>
+                    <div class="title">
+                        <h1>Hóa đơn nhập số @Model.Sohdn</h1>
+                    </div>
+                </div>
+                <div class="i_row">
+                    <div class="i_to">
+                        <div class="main_title">
+                            <p>Nhà cung cấp</p>
+                        </div>
+                        <div class="p_title">
+                            <p>@Model.ManccNavigation.Tenncc</p>
+                        </div>
+                        <div class="p_title">
+                            <p>@Model.ManccNavigation.Dienthoai</p>
+                            <p>@Model.ManccNavigation.Diachi</p>
+                        </div>
+                    </div>
+                    <div class="i_details text_right">
+                        <div class="main_title">
+                            <p>Thông tin hóa đơn</p>
+                        </div>
+                        <div class="p_title">
+                            <p>Số hóa đơn:</p>
+                            <span>@Model.Sohdn</span>
+                        </div>
+                        <div class="p_title">
+                            <p>Ngày nhập:</p>
+                            <span>@Model.Ngaynhap?.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="i_row">
+                    <div class="i_employee">
+                        <div class="main_title">
+                            <p>Nhân viên nhập hàng</p>
+                        </div>
+                        <div class="p_title">
+                            <p>Mã nhân viên:</p>
+                            <span>@Model.Manv</span>
+                        </div>
+                        <div class="p_title">
+                            <p>Tên nhân viên:</p>
+                            <span>@Model.ManvNavigation.Tennv</span>
+                        </div>
+                    </div>
+                    <div class="i_duetotal text_right">
+                        <div class="main_title">
+                            <p>Tổng chi phí</p>
+                        </div>
+                        <div class="p_title">
+                            <p>Tổng (vnd):</p>
+                            <span>@Model.TongTien?.ToString("N0")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="invoice_table">
+                <div class="i_table">
+                    <div class="i_table_head">
+                        <div class="i_row">
+                            <div class="i_col w_40">
+                                <p class="p_title">Mô tả hàng hóa</p>
+                            </div>
+                            <div class="i_col w_15 text_center">
+                                <p class="p_title">Số lượng</p>
+                            </div>
+                            <div class="i_col w_15 text_center">
+                                <p class="p_title">Giá</p>
+                            </div>
+                            <div class="i_col w_15 text_center">
+                                <p class="p_title">Giảm giá</p>
+                            </div>
+                            <div class="i_col w_15 text_right">
+                                <p class="p_title">Tổng tiền</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="i_table_body">
+                        @foreach (var item in Model.Chitiethoadonnhaps)
+                        {
+                            <div class="i_row">
+                                <div class="i_col w_40">
+                                    <p>@item.MahangNavigation.Tenhanghoa</p>
+                                </div>
+                                <div class="i_col w_15 text_center">
+                                    <p>@item.Soluong</p>
+                                </div>
+                                <div class="i_col w_15 text_center">
+                                    <p>@item.MahangNavigation.Dongianhap?.ToString("N0")</p>
+                                </div>
+                                <div class="i_col w_15 text_center">
+                                    <p>@item.Giamgia?.ToString("N0")</p>
+                                </div>
+                                <div class="i_col w_15 text_right">
+                                    <p>@((item.Soluong ?? 0) * (item.MahangNavigation.Dongianhap ?? 0) * (1 - (item.Giamgia ?? 0) / 100)) vnd</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="i_table_foot">
+                        <div class="i_row grand_total_wrap">
+                            <div class="i_col w_50">
+                                <p>TỔNG:</p>
+                            </div>
+                            <div class="i_col w_50 text_right">
+                                <p>@Model.TongTien?.ToString("N0") vnd</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <h3 class="profile-username text-center">@Model.Tennv</h3>
-        <p class="text-muted text-center">@Model.MacvNavigation?.Tencv</p>
-
-        <hr>
-
-        <strong><i class="fas fa-id-card mr-1"></i> @Html.DisplayNameFor(m => m.Manv)</strong>
-        <p class="text-muted">@Model.Manv.ToString("0")</p>
-
-
-        <hr>
-
-        <strong><i class="fas fa-user mr-1"></i> @Html.DisplayNameFor(m => m.Tennv)</strong>
-        <p class="text-muted">@Html.DisplayFor(m => m.Tennv)</p>
-
-        <hr>
-
-        <strong><i class="fas fa-venus-mars mr-1"></i> @Html.DisplayNameFor(m => m.Gioitinh)</strong>
-        <p class="text-muted">@((Model.Gioitinh == true) ? "Nam" : "Nữ")</p>
-
-        <hr>
-
-        <strong><i class="fas fa-calendar-alt mr-1"></i> @Html.DisplayNameFor(m => m.Ngaysinh)</strong>
-        <p class="text-muted">@Model.Ngaysinh?.ToString("dd/MM/yyyy")</p>
-
-        <hr>
-
-        <strong><i class="fas fa-phone-alt mr-1"></i> @Html.DisplayNameFor(m => m.Dienthoai)</strong>
-        <p class="text-muted">@Html.DisplayFor(m => m.Dienthoai)</p>
-
-        <hr>
-
-        <strong><i class="fas fa-envelope mr-1"></i> @Html.DisplayNameFor(m => m.Email)</strong>
-        <p class="text-muted">@Html.DisplayFor(m => m.Email)</p>
-
-        <hr>
-
-        <strong><i class="fas fa-map-marker-alt mr-1"></i> @Html.DisplayNameFor(m => m.Diachi)</strong>
-        <p class="text-muted">@Html.DisplayFor(m => m.Diachi)</p>
-
-        <hr>
-
-        <strong><i class="fas fa-key mr-1"></i> @Html.DisplayNameFor(m => m.Matkhau)</strong>
-        <p class="text-muted">
-            @if (!string.IsNullOrEmpty(Model.Matkhau))
-            {
-                <span class="text-muted">@Model.Matkhau</span>
-            }
-            else
-            {
-                <span class="text-danger">Chưa đặt mật khẩu</span>
-            }
-        </p>
-
-        <hr>
-
-        <strong><i class="fas fa-user-shield mr-1"></i> @Html.DisplayNameFor(m => m.Quyenadmin)</strong>
-        <p class="text-muted">@((Model.Quyenadmin == true) ? "Có" : "Không")</p>
     </div>
-</div>
 
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model?.Manv" class="btn btn-primary"><i class="fas fa-edit"></i> Chỉnh Sửa</a>
-    <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay Lại</a>
-</div>
+    <div class="export_button">
+        <button class="btn-export" onclick="exportInvoiceAsPDF()">Xuất hóa đơn PDF</button>
+    </div>
+    <form asp-controller="Hoadonnhaps" asp-action="DeleteConfirmed" method="post" class="inline-form">
+        <input type="hidden" name="id" value="@Model.Sohdn" />
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa hóa đơn này?')">Xóa hóa đơn</button>
+        <a href="@Url.Action("Index", "Hoadonnhaps")" class="btn btn-secondary">Hủy</a>
+    </form>
+</section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script>
+        function exportInvoiceAsPDF() {
+            const invoiceElement = document.getElementById('printableInvoice');
+            const options = {
+                margin: 0.5,
+                filename: `Hóa đơn nhập số ${@Model.Sohdn}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(options).from(invoiceElement).save();
+        }
+    </script>
+}

@@ -53,43 +53,57 @@ namespace Oracle_WEB_BTL.Controllers
             return View(result);
         }
 
-        // GET: Hoadonnhaps/Details/5
+        // GET: Hoadonnhap/Details/5
         public async Task<IActionResult> Details(decimal? id)
         {
             if (id == null)
+            {
                 return NotFound();
+            }
 
-            var hoadonnhap = await _context.Hoadonnhaps
-                .Include(h => h.ManccNavigation)
-                .Include(h => h.ManvNavigation)
-                .Include(h => h.Chitiethoadonnhaps)
-                .ThenInclude(ct => ct.MahangNavigation)
-                .Where(h => h.Sohdn == id)
-                .Select(h => new
-                {
-                    h.Sohdn,
-                    h.Ngaynhap,
-                    NhaCungCap = h.ManccNavigation.Tenncc,
-                    NhanVien = h.ManvNavigation.Tennv,
-                    ChiTiet = h.Chitiethoadonnhaps.Select(ct => new
-                    {
-                        ct.Mahang,
-                        TenHang = ct.MahangNavigation.Tenhanghoa,
-                        ct.Soluong,
-                        ct.Giamgia,
-                        DonGiaNhap = ct.MahangNavigation.Dongianhap,
-                        ThanhTien = (ct.Soluong ?? 0) * (ct.MahangNavigation.Dongianhap ?? 0) * (1 - (ct.Giamgia ?? 0) / 100)
-                    }),
-                    TongTien = h.Chitiethoadonnhaps.Sum(ct => (ct.Soluong ?? 0) * (ct.MahangNavigation.Dongianhap ?? 0) * (1 - (ct.Giamgia ?? 0) / 100))
-                })
-                .FirstOrDefaultAsync();
+            var invoice = await _context.Hoadonnhaps
+                .Include(i => i.ManccNavigation)
+                .Include(i => i.ManvNavigation)
+                .Include(i => i.Chitiethoadonnhaps)
+                    .ThenInclude(d => d.MahangNavigation)
+                .FirstOrDefaultAsync(i => i.Sohdn == id);
 
-            if (hoadonnhap == null)
+            if (invoice == null)
+            {
                 return NotFound();
+            }
 
-            ViewBag.TongTien = hoadonnhap.TongTien;
-            return View(hoadonnhap);
+            // Tính tổng tiền từ Soluong, Dongianhap và Giamgia
+            invoice.TongTien = invoice.Chitiethoadonnhaps.Sum(d =>
+                d.Soluong.HasValue && d.MahangNavigation.Dongianhap.HasValue
+                ? d.Soluong.Value * d.MahangNavigation.Dongianhap.Value * (1 - (d.Giamgia ?? 0) / 100)
+                : 0);
+
+            return View("Details", invoice);
         }
+
+        // POST: Hoadonnhap/DeleteConfirmed/5
+        [HttpPost, ActionName("DeleteConfirmed")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(decimal id)
+        {
+            var invoice = await _context.Hoadonnhaps
+                .Include(i => i.Chitiethoadonnhaps)
+                .FirstOrDefaultAsync(i => i.Sohdn == id);
+
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            _context.Chitiethoadonnhaps.RemoveRange(invoice.Chitiethoadonnhaps);
+
+            _context.Hoadonnhaps.Remove(invoice);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -215,6 +229,182 @@ namespace Oracle_WEB_BTL.Controllers
                 return View(hoadonnhap);
             }
         }
+
+        // GET: Hoadonnhaps/Edit/5
+        public async Task<IActionResult> Edit(decimal? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var hoadonnhap = await _context.Hoadonnhaps
+                .Include(h => h.Chitiethoadonnhaps)
+                    .ThenInclude(d => d.MahangNavigation)
+                .Include(h => h.ManccNavigation)
+                .FirstOrDefaultAsync(h => h.Sohdn == id);
+
+            if (hoadonnhap == null)
+            {
+                return NotFound();
+            }
+
+            PopulateViewBag();
+
+            // Truyền danh sách chi tiết hóa đơn nhập sang ViewBag để sử dụng trong View
+            ViewBag.ExistingDetails = hoadonnhap.Chitiethoadonnhaps.Select(d => new
+            {
+                Mahang = d.Mahang,
+                Tenhanghoa = d.MahangNavigation.Tenhanghoa,
+                Soluong = d.Soluong,
+                Dongianhap = d.MahangNavigation.Dongianhap,
+                Giamgia = d.Giamgia
+            }).ToList();
+
+            return View(hoadonnhap);
+        }
+
+
+        // POST: Hoadonnhaps/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(decimal id, Hoadonnhap hoadonnhap, List<Chitiethoadonnhap> Chitiethoadonnhaps)
+        {
+            if (id != hoadonnhap.Sohdn)
+            {
+                return NotFound();
+            }
+
+            // Xóa lỗi trước đó
+            ModelState.Clear();
+
+            // Kiểm tra dữ liệu hóa đơn nhập
+            if (hoadonnhap.Mancc == null || hoadonnhap.Mancc <= 0)
+            {
+                ModelState.AddModelError(nameof(hoadonnhap.Mancc), "Nhà cung cấp không được để trống.");
+            }
+
+            // Kiểm tra danh sách chi tiết hóa đơn nhập
+            if (Chitiethoadonnhaps == null || !Chitiethoadonnhaps.Any())
+            {
+                ModelState.AddModelError(string.Empty, "Vui lòng thêm ít nhất một sản phẩm.");
+            }
+            else
+            {
+                // Loại bỏ các mục trùng lặp theo Mahang
+                Chitiethoadonnhaps = Chitiethoadonnhaps
+                    .GroupBy(d => d.Mahang)
+                    .Select(g => g.First())
+                    .ToList();
+
+                foreach (var detail in Chitiethoadonnhaps)
+                {
+                    if (detail.Mahang <= 0)
+                    {
+                        ModelState.AddModelError(string.Empty, "Mã sản phẩm không hợp lệ.");
+                        break;
+                    }
+
+                    if (detail.Soluong == null || detail.Soluong <= 0)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Số lượng cho sản phẩm mã {detail.Mahang} không hợp lệ.");
+                        break;
+                    }
+
+                    if (detail.Giamgia < 0 || detail.Giamgia > 100)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Giảm giá cho sản phẩm mã {detail.Mahang} phải từ 0 đến 100.");
+                        break;
+                    }
+                }
+            }
+
+            // Nếu có lỗi, trả về view
+            if (!ModelState.IsValid)
+            {
+                PopulateViewBag();
+                return View(hoadonnhap);
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Lấy thông tin nhân viên từ claims
+                var manvClaim = User.Claims.FirstOrDefault(c => c.Type == "Manv");
+                if (manvClaim != null && decimal.TryParse(manvClaim.Value, out decimal manv))
+                {
+                    hoadonnhap.Manv = manv;
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin nhân viên.");
+                    PopulateViewBag();
+                    return View(hoadonnhap);
+                }
+
+                // Cập nhật thông tin hóa đơn nhập
+                _context.Entry(hoadonnhap).State = EntityState.Modified;
+
+                // Lấy danh sách chi tiết hóa đơn nhập cũ
+                var existingDetails = await _context.Chitiethoadonnhaps
+                    .Where(d => d.Sohdn == hoadonnhap.Sohdn)
+                    .ToListAsync();
+
+                // Điều chỉnh số lượng sản phẩm trong kho dựa trên chi tiết cũ
+                foreach (var detail in existingDetails)
+                {
+                    var product = await _context.Dmhanghoas.FindAsync(detail.Mahang);
+                    if (product != null)
+                    {
+                        // Giảm số lượng tồn kho theo chi tiết cũ
+                        product.Soluongton -= detail.Soluong ?? 0;
+                        if (product.Soluongton < 0) product.Soluongton = 0;
+
+                        _context.Update(product);
+                    }
+                }
+
+                // Xóa các chi tiết hóa đơn nhập cũ
+                _context.Chitiethoadonnhaps.RemoveRange(existingDetails);
+                await _context.SaveChangesAsync();
+
+                // Thêm các chi tiết hóa đơn nhập mới và cập nhật số lượng tồn kho
+                foreach (var detail in Chitiethoadonnhaps)
+                {
+                    var product = await _context.Dmhanghoas.FindAsync(detail.Mahang);
+                    if (product == null)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Sản phẩm với mã {detail.Mahang} không tồn tại.");
+                        await transaction.RollbackAsync();
+                        PopulateViewBag();
+                        return View(hoadonnhap);
+                    }
+
+                    // Tăng số lượng tồn kho theo chi tiết mới
+                    product.Soluongton += detail.Soluong ?? 0;
+                    _context.Update(product);
+
+                    detail.Sohdn = hoadonnhap.Sohdn;
+                    _context.Chitiethoadonnhaps.Add(detail);
+                }
+
+                // Lưu thay đổi
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError(string.Empty, $"Lỗi: {ex.Message}");
+                PopulateViewBag();
+                return View(hoadonnhap);
+            }
+        }
+
+
+
 
 
         // GET: Hoadonnhaps/Create

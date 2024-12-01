@@ -75,5 +75,8 @@ namespace Oracle_WEB_BTL.Models
         public virtual Nuocsx? ManuocsxNavigation { get; set; }
         public virtual ICollection<Chitiethoadonban> Chitiethoadonbans { get; set; }
         public virtual ICollection<Chitiethoadonnhap> Chitiethoadonnhaps { get; set; }
+
+        [NotMapped]
+        public decimal? Soluongton { get; set; }
     }
 }

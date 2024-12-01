@@ -22,6 +22,83 @@ namespace Oracle_WEB_BTL.Controllers
             _context = context;
         }
 
+        // GET: Dmhanghoas/Edit/5
+        public async Task<IActionResult> Edit(decimal? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var hanghoa = await _context.Dmhanghoas.FindAsync(id);
+            if (hanghoa == null)
+            {
+                return NotFound();
+            }
+
+            await PopulateViewBags();
+            return View(hanghoa);
+        }
+
+        // POST: Dmhanghoas/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+            decimal id,
+            [Bind("Mahang,Tenhanghoa,Maloai,Mahinhdang,Machatlieu,Manuocsx,Mamau,Macongdung,Mansx,Makichthuoc,Madacdiem,Dongianhap,Dongiaban,Thoigianbaohanh,Ghichu,Anh")] Dmhanghoa hanghoa,
+            IFormFile? imageFile)
+        {
+            if (id != hanghoa.Mahang)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Handle image upload if provided
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                        var fileExtension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("Anh", "Chỉ chấp nhận các tệp ảnh (.jpg, .jpeg, .png, .gif).");
+                            await PopulateViewBags();
+                            return View(hanghoa);
+                        }
+
+                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/ProductImages");
+                        Directory.CreateDirectory(uploadsFolder); // Ensure the directory exists
+                        var filePath = Path.Combine(uploadsFolder, imageFile.FileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+
+                        // Update the image field
+                        hanghoa.Anh = imageFile.FileName;
+                    }
+
+                    _context.Update(hanghoa);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Cập nhật sản phẩm thành công!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Lỗi: {ex.Message}");
+                }
+            }
+
+            await PopulateViewBags();
+            return View(hanghoa);
+        }
+
+
         public async Task<IActionResult> Index()
         {
             var hanghoas = _context.Dmhanghoas.Include(h => h.MansxNavigation).AsQueryable();
@@ -193,6 +270,48 @@ namespace Oracle_WEB_BTL.Controllers
             return View(dmhanghoa);
         }
 
+        // POST: Dmhanghoas/DeleteConfirmed/5
+        [HttpPost, ActionName("DeleteConfirmed")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(decimal id)
+        {
+            // Lấy sản phẩm cần xóa
+            var product = await _context.Dmhanghoas
+                .Include(p => p.Chitiethoadonnhaps)
+                .Include(p => p.Chitiethoadonbans)
+                .FirstOrDefaultAsync(p => p.Mahang == id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Xóa tất cả chi tiết hóa đơn liên quan đến sản phẩm này
+                if (product.Chitiethoadonnhaps.Any())
+                {
+                    _context.Chitiethoadonnhaps.RemoveRange(product.Chitiethoadonnhaps);
+                }
+
+                if (product.Chitiethoadonbans.Any())
+                {
+                    _context.Chitiethoadonbans.RemoveRange(product.Chitiethoadonbans);
+                }
+
+                // Xóa sản phẩm
+                _context.Dmhanghoas.Remove(product);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Xóa sản phẩm thành công!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Lỗi khi xóa sản phẩm: {ex.Message}");
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
 
 
     }

@@ -18,7 +18,7 @@
             <div class="buttons d-flex justify-content-center flex-wrap">
                 <a class="product-btn" asp-controller="Dmhanghoas" asp-action="Index">Quay lại</a>
                 <a class="product-btn" asp-controller="Dmhanghoas" asp-action="Edit" asp-route-id="@Model.Mahang">Chỉnh sửa</a>
-                <form asp-controller="Dmhanghoas" asp-action="Delete" method="post" asp-route-id="@Model.Mahang">
+                <form asp-controller="Dmhanghoas" asp-action="DeleteConfirmed" method="post" asp-route-id="@Model.Mahang" class="inline-form">
                     <button type="submit" class="product-btn" id="delete" onclick="return confirmDelete()">Xóa</button>
                 </form>
             </div>

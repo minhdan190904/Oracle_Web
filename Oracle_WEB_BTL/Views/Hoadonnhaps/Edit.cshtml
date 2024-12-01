@@ -1,139 +1,345 @@
-﻿@using Oracle_WEB_BTL.Helpers
-@model Oracle_WEB_BTL.Models.Nhanvien
-
+﻿@model Oracle_WEB_BTL.Models.Hoadonnhap
 
 @{
-    ViewData["Title"] = "Chỉnh Sửa Nhân Viên";
+    ViewData["Title"] = "Chỉnh sửa hóa đơn nhập";
     Layout = "~/Views/Shared/MyLayoutHelper.cshtml";
 }
 
-<section class="content">
-    <div class="ms-2 mx-2">
-        <form asp-controller="Nhanviens" asp-action="Edit" method="post" class="mt-3" enctype="multipart/form-data">
-            <input type="hidden" asp-for="Manv" />
-            <input type="hidden" name="oldImage" value="@Model.Anh" />
+<h2>@ViewData["Title"]</h2>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card card-warning">
-                        <div class="card-header">
-                            <h3 class="card-title">Thông Tin Cá Nhân</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="text-center">
-                                <img id="avatarPreview" class="profile-user-img img-fluid img-circle" src="~/images/@(Model.Anh ?? AppDefaults.DefaultImageFile)" alt="User profile picture">
-                                <div class="form-group">
-                                    <label for="imageFile">Chọn Ảnh</label>
-                                    <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" style="display:none;" />
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Tennv" class="col-sm-4 col-form-label">Tên Nhân Viên</label>
-                                <div class="col-sm-8">
-                                    <input asp-for="Tennv" class="form-control" />
-                                    <span asp-validation-for="Tennv" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Dienthoai" class="col-sm-4 col-form-label">Số Điện Thoại</label>
-                                <div class="col-sm-8">
-                                    <input asp-for="Dienthoai" class="form-control" />
-                                    <span asp-validation-for="Dienthoai" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Gioitinh" class="col-sm-4 col-form-label">Giới Tính</label>
-                                <div class="col-sm-8">
-                                    <select asp-for="Gioitinh" class="form-control select2bs4" asp-items="@ViewBag.GenderList"></select>
-                                    <span asp-validation-for="Gioitinh" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Ngaysinh" class="col-sm-4 col-form-label">Ngày Sinh</label>
-                                <div class="col-sm-8">
-                                    <input asp-for="Ngaysinh" class="form-control" type="date" />
-                                    <span asp-validation-for="Ngaysinh" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Diachi" class="col-sm-4 col-form-label">Địa Chỉ</label>
-                                <div class="col-sm-8">
-                                    <input asp-for="Diachi" class="form-control" />
-                                    <span asp-validation-for="Diachi" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card card-secondary">
-                        <div class="card-header">
-                            <h3 class="card-title">Cập Nhật Tài Khoản</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group row mb-3">
-                                <label asp-for="Email" class="col-sm-4 col-form-label">Email</label>
-                                <div class="col-sm-8">
-                                    <input asp-for="Email" class="form-control" />
-                                    <span asp-validation-for="Email" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Matkhau" class="col-sm-4 col-form-label">Mật Khẩu</label>
-                                <div class="col-sm-8">
-                                    <input asp-for="Matkhau" class="form-control" placeholder="Nhập Mật Khẩu Mới (nếu có)" />
-                                    <span asp-validation-for="Matkhau" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Quyenadmin" class="col-sm-4 col-form-label">Quyền Admin</label>
-                                <div class="col-sm-8">
-                                    <select asp-for="Quyenadmin" class="form-control" asp-items="@ViewBag.QuyenadminList"></select>
-                                    <span asp-validation-for="Quyenadmin" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-3">
-                                <label asp-for="Macv" class="col-sm-4 col-form-label">Công Việc</label>
-                                <div class="col-sm-8">
-                                    <select asp-for="Macv" class="form-control" asp-items="@ViewBag.JobList"></select>
-                                    <span asp-validation-for="Macv" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-12">
-                    <a asp-action="Index" class="btn btn-secondary">Quay Lại</a>
-                    <button type="submit" class="btn btn-warning float-right">Cập Nhật</button>
-                </div>
-            </div>
-        </form>
+<!-- Display Validation Summary -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
     </div>
-</section>
+}
+
+<form asp-action="Edit" method="post">
+    <!-- Anti-Forgery Token -->
+    @Html.AntiForgeryToken()
+
+    <!-- Hidden field for Sohdn -->
+    <input type="hidden" asp-for="Sohdn" />
+
+    <!-- Chọn nhà cung cấp -->
+    <div class="form-group">
+        <label for="Mancc">Chọn nhà cung cấp:</label>
+        <select asp-for="Mancc" class="form-control select2bs4" asp-items="ViewBag.Suppliers" id="Mancc">
+            <option value="" disabled>-- Chọn nhà cung cấp --</option>
+        </select>
+        <span class="text-danger">@Html.ValidationMessageFor(m => m.Mancc)</span>
+    </div>
+
+    <!-- Thông tin nhà cung cấp -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Thông tin nhà cung cấp</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên</th>
+                        <th>Địa chỉ</th>
+                        <th>Số điện thoại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="ManccDisplay">@Model.ManccNavigation?.Mancc</td>
+                        <td id="Tenncc">@Model.ManccNavigation?.Tenncc</td>
+                        <td id="Diachi">@Model.ManccNavigation?.Diachi</td>
+                        <td id="Dienthoai">@Model.ManccNavigation?.Dienthoai</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Chọn sản phẩm -->
+    <div class="form-group">
+        <label for="Mahang">Chọn sản phẩm:</label>
+        <select id="Mahang" class="form-control select2bs4">
+            <option value="" disabled selected>-- Chọn sản phẩm --</option>
+            @foreach (var product in ViewBag.Products)
+            {
+                <option value="@product.Value">@product.Text</option>
+            }
+        </select>
+        <span class="text-danger" id="ProductError" style="display: none;">Vui lòng chọn sản phẩm.</span>
+    </div>
+
+    <!-- Thông tin sản phẩm cần thêm -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Thông tin sản phẩm cần thêm</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID Sản Phẩm</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá Nhập</th>
+                        <th>Giảm Giá (%)</th>
+                        <th></th> <!-- Cột cho nút Thêm sản phẩm -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="SelectedProductId">--</td>
+                        <td id="SelectedProductName">--</td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductQuantity" min="1" placeholder="Nhập số lượng" />
+                            <span class="text-danger" id="QuantityError" style="display: none;">Vui lòng nhập số lượng.</span>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductUnitPrice" readonly />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" id="ProductDiscount" min="0" max="100" placeholder="Nhập giảm giá (%) nếu có" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" id="AddProductButton">Thêm sản phẩm</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Danh sách sản phẩm đã chọn -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">Danh sách sản phẩm đã chọn</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped" id="ProductDetailsTable">
+                <thead>
+                    <tr>
+                        <th>ID Sản Phẩm</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá Nhập</th>
+                        <th>Giảm Giá (%)</th>
+                        <th>Thành Tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="SelectedProductTableBody">
+                    @{
+                        int index = 0;
+                    }
+                    @foreach (var detail in ViewBag.ExistingDetails)
+                    {
+                        var totalAmount = (detail.Soluong ?? 0) * (detail.Dongianhap ?? 0) * (1 - (detail.Giamgia ?? 0) / 100);
+                        <tr data-index="@index">
+                            <td>@detail.Mahang<input type="hidden" name="Chitiethoadonnhaps[@index].Mahang" value="@detail.Mahang" /></td>
+                            <td>@detail.Tenhanghoa</td>
+                            <td><input type="number" class="form-control quantity-input" name="Chitiethoadonnhaps[@index].Soluong" value="@detail.Soluong" min="1" /></td>
+                            <td>@(detail.Dongianhap?.ToString("N0"))</td>
+                            <td><input type="number" class="form-control discount-input" name="Chitiethoadonnhaps[@index].Giamgia" value="@detail.Giamgia" min="0" max="100" /></td>
+                            <td class="total-amount-cell">@totalAmount.ToString("N0")</td>
+                            <td><button type="button" class="btn btn-danger RemoveProductButton">Xóa</button></td>
+                        </tr>
+                        index++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tổng tiền -->
+    <div class="card-footer">
+        <h4>Tổng Tiền: <span id="TotalAmount">0</span> VNĐ</h4>
+    </div>
+
+    <!-- Nút lưu hóa đơn -->
+    <button type="submit" class="btn btn-success mt-3">Lưu thay đổi</button>
+</form>
 
 @section Scripts {
-    @Html.Partial("_ValidationScriptsPartial")
     <script>
-        function previewImage(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const avatarPreview = document.getElementById('avatarPreview');
-                avatarPreview.src = e.target.result;
+        $(document).ready(function () {
+            // Initialize Select2
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            });
+
+            var nextIndex = @ViewBag.ExistingDetails.Count;
+
+            // Load supplier info when supplier selection changes
+            $('#Mancc').change(function () {
+                var supplierId = $(this).val();
+                if (supplierId) {
+                    $.ajax({
+                        url: '@Url.Action("GetSupplierInfo", "Hoadonnhaps")',
+                        data: { supplierId: supplierId },
+                        success: function (data) {
+                            if (data) {
+                                $('#ManccDisplay').text(data.mancc || "--"); // Hiển thị "--" nếu null
+                                $('#Tenncc').text(data.tenncc?.trim() || "--"); // Trim để loại bỏ khoảng trắng thừa
+                                $('#Diachi').text(data.diachi?.trim() || "--");
+                                $('#Dienthoai').text(data.dienthoai?.trim() || "--");
+                            } else {
+                                resetSupplierFields();
+                            }
+                        },
+                        error: function () {
+                            resetSupplierFields();
+                        }
+                    });
+                } else {
+                    resetSupplierFields();
+                }
+            });
+
+            // Reset fields to default when no supplier is selected
+            function resetSupplierFields() {
+                $('#ManccDisplay, #Tenncc, #Diachi, #Dienthoai').text('--');
             }
-            reader.readAsDataURL(file);
-        }
+
+
+            // Load product information when a product is selected
+            $('#Mahang').change(function () {
+                var productId = $(this).val();
+                if (productId) {
+                    $.ajax({
+                        url: '@Url.Action("GetProductInfo", "Hoadonnhaps")',
+                        data: { productId: productId },
+                        success: function (data) {
+                            if (data) {
+                                $('#SelectedProductId').text(data.mahang);
+                                $('#SelectedProductName').text(data.tenhanghoa);
+                                $('#ProductUnitPrice').val(data.dongianhap);
+                                $('#ProductDiscount').val('0');
+                                $('#ProductQuantity').val('');
+                            } else {
+                                $('#SelectedProductId, #SelectedProductName').text('--');
+                                $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                            }
+                        },
+                        error: function () {
+                            $('#SelectedProductId, #SelectedProductName').text('--');
+                            $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                        }
+                    });
+                } else {
+                    $('#SelectedProductId, #SelectedProductName').text('--');
+                    $('#ProductUnitPrice, #ProductDiscount, #ProductQuantity').val('');
+                }
+            });
+
+            // Handle adding products to the invoice
+            $('#AddProductButton').click(function () {
+                var productId = $('#SelectedProductId').text();
+                var productName = $('#SelectedProductName').text();
+                var quantity = parseInt($('#ProductQuantity').val());
+                var unitPrice = parseFloat($('#ProductUnitPrice').val());
+                var discount = parseInt($('#ProductDiscount').val()) || 0;
+
+                // Client-side validation
+                var hasError = false;
+
+                if (!productId || productId === '--') {
+                    $('#ProductError').show();
+                    hasError = true;
+                } else {
+                    $('#ProductError').hide();
+                }
+
+                if (isNaN(quantity) || quantity <= 0) {
+                    $('#QuantityError').show();
+                    hasError = true;
+                } else {
+                    $('#QuantityError').hide();
+                }
+
+                if (discount < 0 || discount > 100) {
+                    alert('Giảm giá phải từ 0 đến 100.');
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    return;
+                }
+
+                // Calculate total amount
+                var totalAmount = quantity * unitPrice * (100 - discount) / 100;
+
+                // Check if product is already added
+                var existingRow = $('#SelectedProductTableBody').find(`input[name$='Mahang'][value='${productId}']`);
+                if (existingRow.length > 0) {
+                    alert('Sản phẩm này đã được thêm.');
+                    return;
+                }
+
+                // Append the product to the table with the correct index
+                $('#SelectedProductTableBody').append(
+                    `<tr data-index="${nextIndex}">
+                                <td>${productId}<input type="hidden" name="Chitiethoadonnhaps[${nextIndex}].Mahang" value="${productId}" /></td>
+                                <td>${productName}</td>
+                                <td><input type="number" class="form-control quantity-input" name="Chitiethoadonnhaps[${nextIndex}].Soluong" value="${quantity}" min="1" /></td>
+                                <td>${unitPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td><input type="number" class="form-control discount-input" name="Chitiethoadonnhaps[${nextIndex}].Giamgia" value="${discount}" min="0" max="100" /></td>
+                                <td class="total-amount-cell">${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td><button type="button" class="btn btn-danger RemoveProductButton">Xóa</button></td>
+                            </tr>`
+                );
+
+                nextIndex++; // Increment the index for the next product
+
+                updateTotalAmount();
+
+                // Clear product selection
+                $('#Mahang').val('').trigger('change');
+                $('#SelectedProductId').text('--');
+                $('#SelectedProductName').text('--');
+                $('#ProductUnitPrice').val('');
+                $('#ProductDiscount').val('');
+                $('#ProductQuantity').val('');
+            });
+
+            // Handle removing products from the invoice
+            $('#SelectedProductTableBody').on('click', '.RemoveProductButton', function () {
+                $(this).closest('tr').remove();
+                updateTotalAmount();
+            });
+
+            // Update total amount when quantity or discount changes
+            $('#SelectedProductTableBody').on('input', '.quantity-input, .discount-input', function () {
+                var row = $(this).closest('tr');
+                var quantity = parseInt(row.find('.quantity-input').val()) || 0;
+                var unitPriceText = row.find('td').eq(3).text().replace(/,/g, '');
+                var unitPrice = parseFloat(unitPriceText) || 0;
+                var discount = parseInt(row.find('.discount-input').val()) || 0;
+
+                var totalAmount = quantity * unitPrice * (100 - discount) / 100;
+                row.find('.total-amount-cell').text(totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+                updateTotalAmount();
+            });
+
+            function updateTotalAmount() {
+                var total = 0;
+                $('#SelectedProductTableBody tr').each(function () {
+                    var amountText = $(this).find('.total-amount-cell').text().replace(/,/g, '');
+                    var amount = parseFloat(amountText) || 0;
+                    total += amount;
+                });
+                $('#TotalAmount').text(total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            }
+
+            // Initialize total amount
+            updateTotalAmount();
+        });
     </script>
 }

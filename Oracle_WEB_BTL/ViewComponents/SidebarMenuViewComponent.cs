@@ -10,7 +10,7 @@ public class SidebarMenuViewComponent : ViewComponent
     {
         MenuItems = new List<MenuItem>()
         {
-            //new MenuItem() { Id = 1, Name = "Tổng quan", Link = "/BangDieuKhien/Index", Icon = "fas fa-tachometer-alt", IsAdmin = false },
+            new MenuItem() { Id = 1, Name = "Tổng quan", Link = "/Dashboard/Index", Icon = "fas fa-tachometer-alt", IsAdmin = false },
             new MenuItem() { Id = 2, Name = "Hóa đơn nhập hàng", Link = "/Hoadonnhaps/Index", Icon = "fas fa-file-invoice", IsAdmin = false },
             new MenuItem() { Id = 3, Name = "Hóa đơn bán hàng", Link = "/Hoadonbans/Index", Icon = "fas fa-file-invoice-dollar", IsAdmin = false },
             new MenuItem() { Id = 4, Name = "Nhân viên", Link = "/NhanViens/Index", Icon = "fas fa-user", IsAdmin = true },

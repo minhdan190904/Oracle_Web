@@ -21,6 +21,237 @@ namespace Oracle_WEB_BTL.Controllers
             _context = context;
         }
 
+        // GET: Hoadonbans/Edit/5
+        public async Task<IActionResult> Edit(decimal? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var hoadonban = await _context.Hoadonbans
+                .Include(h => h.Chitiethoadonbans)
+                    .ThenInclude(d => d.MahangNavigation)
+                .Include(h => h.MakhachNavigation)
+                .FirstOrDefaultAsync(h => h.Sohdb == id);
+
+            if (hoadonban == null)
+            {
+                return NotFound();
+            }
+
+            PopulateViewBag();
+
+            // Truyền danh sách chi tiết hóa đơn bán sang ViewBag để sử dụng trong View
+            ViewBag.ExistingDetails = hoadonban.Chitiethoadonbans.Select(d => new
+            {
+                Mahang = d.Mahang,
+                Tenhanghoa = d.MahangNavigation.Tenhanghoa,
+                Soluong = d.Soluong,
+                Dongiaban = d.MahangNavigation.Dongiaban,
+                Giamgia = d.Giamgia
+            }).ToList();
+
+            return View(hoadonban);
+        }
+
+        // POST: Hoadonbans/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(decimal id, Hoadonban hoadonban, List<Chitiethoadonban> Chitiethoadonbans)
+        {
+            if (id != hoadonban.Sohdb)
+            {
+                return NotFound();
+            }
+
+            // Xóa lỗi trước đó
+            ModelState.Clear();
+
+            // Kiểm tra dữ liệu hóa đơn bán
+            if (hoadonban.Makhach == null || hoadonban.Makhach <= 0)
+            {
+                ModelState.AddModelError(nameof(hoadonban.Makhach), "Khách hàng không được để trống.");
+            }
+
+            // Kiểm tra danh sách chi tiết hóa đơn bán
+            if (Chitiethoadonbans == null || !Chitiethoadonbans.Any())
+            {
+                ModelState.AddModelError(string.Empty, "Vui lòng thêm ít nhất một sản phẩm.");
+            }
+            else
+            {
+                // Loại bỏ các mục trùng lặp theo Mahang
+                Chitiethoadonbans = Chitiethoadonbans
+                    .GroupBy(d => d.Mahang)
+                    .Select(g => g.First())
+                    .ToList();
+
+                foreach (var detail in Chitiethoadonbans)
+                {
+                    if (detail.Mahang <= 0)
+                    {
+                        ModelState.AddModelError(string.Empty, "Mã sản phẩm không hợp lệ.");
+                        break;
+                    }
+
+                    if (detail.Soluong == null || detail.Soluong <= 0)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Số lượng cho sản phẩm mã {detail.Mahang} không hợp lệ.");
+                        break;
+                    }
+
+                    if (detail.Giamgia < 0 || detail.Giamgia > 100)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Giảm giá cho sản phẩm mã {detail.Mahang} phải từ 0 đến 100.");
+                        break;
+                    }
+                }
+            }
+
+            // Nếu có lỗi, trả về view
+            if (!ModelState.IsValid)
+            {
+                PopulateViewBag();
+                return View(hoadonban);
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Lấy thông tin nhân viên từ claims
+                var manvClaim = User.Claims.FirstOrDefault(c => c.Type == "Manv");
+                if (manvClaim != null && decimal.TryParse(manvClaim.Value, out decimal manv))
+                {
+                    hoadonban.Manv = manv;
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin nhân viên.");
+                    PopulateViewBag();
+                    return View(hoadonban);
+                }
+
+                // Cập nhật thông tin hóa đơn bán
+                _context.Entry(hoadonban).State = EntityState.Modified;
+
+                // Lấy danh sách chi tiết hóa đơn bán cũ
+                var existingDetails = await _context.Chitiethoadonbans
+                    .Where(d => d.Sohdb == hoadonban.Sohdb)
+                    .ToListAsync();
+
+                // Điều chỉnh số lượng sản phẩm trong kho dựa trên chi tiết cũ
+                foreach (var detail in existingDetails)
+                {
+                    var product = await _context.Dmhanghoas.FindAsync(detail.Mahang);
+                    if (product != null)
+                    {
+                        // Tăng số lượng tồn kho theo chi tiết cũ (vì trước đó đã bán, giờ hoàn lại)
+                        product.Soluongton += detail.Soluong ?? 0;
+                        _context.Update(product);
+                    }
+                }
+
+                // Xóa các chi tiết hóa đơn bán cũ
+                _context.Chitiethoadonbans.RemoveRange(existingDetails);
+                await _context.SaveChangesAsync();
+
+                // Thêm các chi tiết hóa đơn bán mới và cập nhật số lượng tồn kho
+                foreach (var detail in Chitiethoadonbans)
+                {
+                    var product = await _context.Dmhanghoas.FindAsync(detail.Mahang);
+                    if (product == null)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Sản phẩm với mã {detail.Mahang} không tồn tại.");
+                        await transaction.RollbackAsync();
+                        PopulateViewBag();
+                        return View(hoadonban);
+                    }
+
+                    if (product.Soluongton < detail.Soluong)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Số lượng tồn kho của sản phẩm mã {detail.Mahang} không đủ.");
+                        await transaction.RollbackAsync();
+                        PopulateViewBag();
+                        return View(hoadonban);
+                    }
+
+                    // Giảm số lượng tồn kho theo chi tiết mới
+                    product.Soluongton -= detail.Soluong ?? 0;
+                    _context.Update(product);
+
+                    detail.Sohdb = hoadonban.Sohdb;
+                    _context.Chitiethoadonbans.Add(detail);
+                }
+
+                // Lưu thay đổi
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError(string.Empty, $"Lỗi: {ex.Message}");
+                PopulateViewBag();
+                return View(hoadonban);
+            }
+        }
+
+
+
+        // GET: Hoadonban/Details/5
+        public async Task<IActionResult> Details(decimal? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var invoice = await _context.Hoadonbans
+                .Include(i => i.MakhachNavigation)
+                .Include(i => i.ManvNavigation)
+                .Include(i => i.Chitiethoadonbans)
+                    .ThenInclude(d => d.MahangNavigation)
+                .FirstOrDefaultAsync(i => i.Sohdb == id);
+
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            // Tính tổng tiền từ Soluong, Dongiaban và Giamgia
+            invoice.TongTien = invoice.Chitiethoadonbans.Sum(d =>
+                d.Soluong.HasValue && d.MahangNavigation.Dongiaban.HasValue
+                ? d.Soluong.Value * d.MahangNavigation.Dongiaban.Value * (1 - (d.Giamgia ?? 0) / 100)
+                : 0);
+
+            return View("Details", invoice);
+        }
+
+        // POST: Hoadonban/DeleteConfirmed/5
+        [HttpPost, ActionName("DeleteConfirmed")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(decimal id)
+        {
+            var invoice = await _context.Hoadonbans
+                .Include(i => i.Chitiethoadonbans)
+                .FirstOrDefaultAsync(i => i.Sohdb == id);
+
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            _context.Chitiethoadonbans.RemoveRange(invoice.Chitiethoadonbans);
+            _context.Hoadonbans.Remove(invoice);
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+
         // GET: Hoadonbans
         public async Task<IActionResult> Index()
         {

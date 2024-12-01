@@ -28,7 +28,7 @@ namespace Oracle_WEB_BTL.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Dmhanghoas");
+                return RedirectToAction("Index", "Dashboard");
             }
             return View();
         }
@@ -58,7 +58,7 @@ namespace Oracle_WEB_BTL.Controllers
 
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), properties);
 
-                    return RedirectToAction("Index", "Dmhanghoas");
+                    return RedirectToAction("Index", "Dashboard");
                 }
 
                 ViewData["ValidateMessage"] = AppDefaults.InvalidLoginMessage;

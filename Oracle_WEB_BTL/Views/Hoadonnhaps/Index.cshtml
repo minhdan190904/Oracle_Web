@@ -32,8 +32,6 @@
                             <th>Ngày Nhập</th>
                             <th>Tổng Tiền</th>
                             <th>Chi Tiết</th>
-                            <th>Sửa</th>
-                            <th>Xóa</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -48,16 +46,6 @@
                                 <td>
                                     <a asp-action="Details" asp-route-id="@item.Sohdn" class="btn btn-info btn-sm">
                                         <i class="fa fa-info-circle"></i> Xem
-                                    </a>
-                                </td>
-                                <td>
-                                    <a asp-action="Edit" asp-route-id="@item.Sohdn" class="btn btn-warning btn-sm">
-                                        <i class="fa fa-pencil-alt"></i> Sửa
-                                    </a>
-                                </td>
-                                <td>
-                                    <a asp-action="Delete" asp-route-id="@item.Sohdn" class="btn btn-danger btn-sm">
-                                        <i class="fa fa-trash"></i> Xóa
                                     </a>
                                 </td>
                             </tr>

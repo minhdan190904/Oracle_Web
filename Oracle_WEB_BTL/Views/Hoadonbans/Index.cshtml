@@ -31,8 +31,6 @@
                             <th>Khách Hàng</th>
                             <th>Nhân Viên</th>
                             <th>Tổng Tiền</th>
-                            <th>Sửa</th>
-                            <th>Xóa</th>
                             <th>Chi Tiết</th>
                         </tr>
                     </thead>
@@ -44,17 +42,7 @@
                                 <td>@hoadonban.Ngayban?.ToString("dd/MM/yyyy")</td>
                                 <td>@hoadonban.MakhachNavigation?.Tenkhach</td>
                                 <td>@hoadonban.ManvNavigation?.Tennv</td>
-                                <td>@string.Format("{0:N0}", hoadonban.TongTien)</td>
-                                <td>
-                                    <a asp-action="Edit" asp-route-id="@hoadonban.Sohdb" class="btn btn-warning btn-sm">
-                                        <i class="fa fa-pencil-alt"></i> Sửa
-                                    </a>
-                                </td>
-                                <td>
-                                    <a asp-action="Delete" asp-route-id="@hoadonban.Sohdb" class="btn btn-danger btn-sm">
-                                        <i class="fa fa-trash"></i> Xóa
-                                    </a>
-                                </td>
+                                <td>@string.Format("{0:N0}", hoadonban.TongTien) VND</td>
                                 <td>
                                     <a asp-action="Details" asp-route-id="@hoadonban.Sohdb" class="btn btn-info btn-sm">
                                         <i class="fa fa-eye"></i> Chi Tiết
